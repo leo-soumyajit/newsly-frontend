@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+import { API_ENDPOINTS } from "@/config/api";
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +25,7 @@ const SignIn = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:8000/api/v1/auth/login", {
+      const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, {
         email: formData.email,
         password: formData.password
       });

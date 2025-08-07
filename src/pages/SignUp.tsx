@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Eye, EyeOff, ArrowLeft, Mail, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+import { API_ENDPOINTS } from "@/config/api";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +41,7 @@ const SignUp = () => {
 
     setIsLoading(true);
     try {
-      await axios.post("http://localhost:8000/api/v1/otp/send-otp", {
+      await axios.post(API_ENDPOINTS.OTP.SEND, {
         email: formData.email
       });
       
@@ -73,7 +74,7 @@ const SignUp = () => {
 
     setIsLoading(true);
     try {
-      await axios.post("http://localhost:8000/api/v1/otp/verify-otp", {
+      await axios.post(API_ENDPOINTS.OTP.VERIFY, {
         email: formData.email,
         otp: parseInt(formData.otp)
       });
@@ -109,7 +110,7 @@ const SignUp = () => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post("http://localhost:8000/api/v1/auth/signup", {
+      const response = await axios.post(API_ENDPOINTS.AUTH.SIGNUP, {
         name: formData.name,
         email: formData.email,
         password: formData.password
