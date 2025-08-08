@@ -37,4 +37,4 @@ export const TrendingNews = ({ posts }: TrendingNewsProps) => {
       </div>
     </section>
   );
-};
+};  

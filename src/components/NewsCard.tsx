@@ -23,6 +23,9 @@ export const NewsCard = ({ post, variant = "medium", className }: NewsCardProps)
   const isLarge = variant === "large";
   const isSmall = variant === "small";
 
+  // Use a safe image, fall back to a placeholder if missing or empty
+  const safeImage = post.image && post.image.trim() !== "" ? post.image : "/no-image.jpg";
+
   return (
     <article
       className={cn(
@@ -35,10 +38,9 @@ export const NewsCard = ({ post, variant = "medium", className }: NewsCardProps)
       )}
     >
       {isHero ? (
-        // Hero variant
         <div className="relative h-[400px] bg-hero rounded-lg overflow-hidden">
           <img
-            src={post.image}
+            src={safeImage}
             alt={post.title}
             className="w-full h-full object-cover"
           />
@@ -66,25 +68,19 @@ export const NewsCard = ({ post, variant = "medium", className }: NewsCardProps)
           </div>
         </div>
       ) : (
-        // Other variants
-        <div className={cn("flex", {
-          "flex-col": !isSmall,
-          "flex-row space-x-3": isSmall,
-        })}>
+        <div className={cn("flex", { "flex-col": !isSmall, "flex-row space-x-3": isSmall })}>
           <div className={cn("relative overflow-hidden", {
             "h-48": isLarge,
             "h-32": variant === "medium",
             "w-20 h-16 flex-shrink-0": isSmall,
           })}>
             <img
-              src={post.image}
+              src={safeImage}
               alt={post.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </div>
-          <div className={cn("p-4", {
-            "flex-1": isSmall,
-          })}>
+          <div className={cn("p-4", { "flex-1": isSmall })}>
             <div className="flex items-center justify-between mb-2">
               <span className="inline-block bg-accent/10 text-accent px-2 py-1 rounded text-xs font-medium">
                 {post.category}
