@@ -7,9 +7,9 @@ interface NewsPost {
   excerpt: string;
   image: string;
   category: string;
-  publishedAt: string;
-  readTime: string;
-  views: number;
+  publishedAt?: string; // made optional
+  readTime?: string;
+  views?: number; // made optional
 }
 
 interface NewsCardProps {
@@ -23,8 +23,20 @@ export const NewsCard = ({ post, variant = "medium", className }: NewsCardProps)
   const isLarge = variant === "large";
   const isSmall = variant === "small";
 
-  // Use a safe image, fall back to a placeholder if missing or empty
+  // Safe image fallback
   const safeImage = post.image && post.image.trim() !== "" ? post.image : "/no-image.jpg";
+
+  // Safely format views count
+  const viewsDisplay =
+    typeof post.views === "number" ? post.views.toLocaleString() : "0";
+
+  // Safely format published date
+  const dateDisplay = post.publishedAt
+    ? new Date(post.publishedAt).toLocaleDateString()
+    : "";
+
+  // Safe readTime
+  const readTimeDisplay = post.readTime ?? "";
 
   return (
     <article
@@ -58,22 +70,24 @@ export const NewsCard = ({ post, variant = "medium", className }: NewsCardProps)
             <div className="flex items-center space-x-4 text-xs text-gray-300">
               <div className="flex items-center space-x-1">
                 <Clock className="h-3 w-3" />
-                <span>{post.readTime}</span>
+                <span>{readTimeDisplay}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Eye className="h-3 w-3" />
-                <span>{post.views.toLocaleString()}</span>
+                <span>{viewsDisplay}</span>
               </div>
             </div>
           </div>
         </div>
       ) : (
         <div className={cn("flex", { "flex-col": !isSmall, "flex-row space-x-3": isSmall })}>
-          <div className={cn("relative overflow-hidden", {
-            "h-48": isLarge,
-            "h-32": variant === "medium",
-            "w-20 h-16 flex-shrink-0": isSmall,
-          })}>
+          <div
+            className={cn("relative overflow-hidden", {
+              "h-48": isLarge,
+              "h-32": variant === "medium",
+              "w-20 h-16 flex-shrink-0": isSmall,
+            })}
+          >
             <img
               src={safeImage}
               alt={post.title}
@@ -85,13 +99,20 @@ export const NewsCard = ({ post, variant = "medium", className }: NewsCardProps)
               <span className="inline-block bg-accent/10 text-accent px-2 py-1 rounded text-xs font-medium">
                 {post.category}
               </span>
-              <span className="text-xs text-muted-foreground">{post.publishedAt}</span>
+              <span className="text-xs text-muted-foreground">
+                {dateDisplay}
+              </span>
             </div>
-            <h3 className={cn("font-semibold leading-tight mb-2 group-hover:text-accent transition-colors", {
-              "text-lg": isLarge,
-              "text-base": variant === "medium",
-              "text-sm": isSmall,
-            })}>
+            <h3
+              className={cn(
+                "font-semibold leading-tight mb-2 group-hover:text-accent transition-colors",
+                {
+                  "text-lg": isLarge,
+                  "text-base": variant === "medium",
+                  "text-sm": isSmall,
+                }
+              )}
+            >
               {post.title}
             </h3>
             {!isSmall && (
@@ -102,11 +123,11 @@ export const NewsCard = ({ post, variant = "medium", className }: NewsCardProps)
             <div className="flex items-center space-x-3 text-xs text-muted-foreground">
               <div className="flex items-center space-x-1">
                 <Clock className="h-3 w-3" />
-                <span>{post.readTime}</span>
+                <span>{readTimeDisplay}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Eye className="h-3 w-3" />
-                <span>{post.views.toLocaleString()}</span>
+                <span>{viewsDisplay}</span>
               </div>
             </div>
           </div>

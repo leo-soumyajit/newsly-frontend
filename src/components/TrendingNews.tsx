@@ -1,4 +1,5 @@
 import { NewsCard } from "./NewsCard";
+import { Link } from "react-router-dom";
 
 interface NewsPost {
   id: string;
@@ -29,12 +30,14 @@ export const TrendingNews = ({ posts }: TrendingNewsProps) => {
           </button>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.slice(0, 3).map((post) => (
-          <NewsCard key={post.id} post={post} variant="large" />
+          <Link key={post.id} to={`/posts/${post.id}`} className="block">
+            <NewsCard post={post} variant="large" />
+          </Link>
         ))}
       </div>
     </section>
   );
-};  
+};

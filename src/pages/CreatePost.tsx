@@ -103,7 +103,7 @@ const CreatePost = () => {
 
       // Append image files with the correct field name your backend expects:
       imageFiles.forEach((file) => {
-        data.append("imageFiles", file); // <-- Corrected field name here
+        data.append("imageFiles", file); // Correct field name as per your API
       });
 
       await axios.post(
@@ -262,16 +262,16 @@ const CreatePost = () => {
 
       {popup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-card rounded-xl drop-shadow-lg px-8 py-8 flex flex-col items-center text-center border border-border">
+          <div className="bg-card rounded-xl drop-shadow-lg px-8 py-8 flex flex-col items-center text-center border border-border max-w-sm mx-4">
             {popup.type === "success" ? (
               <>
-                <CheckCircle2 className="h-12 w-12 text-green-500 mb-2" />
+                <CheckCircle2 className="h-12 w-12 text-green-600 mb-2" />
                 <div className="font-bold text-lg mb-1">{popup.message}</div>
                 <div className="text-sm text-muted-foreground">Redirecting to News Feed...</div>
               </>
             ) : (
               <>
-                <AlertTriangle className="h-12 w-12 text-red-500 mb-2" />
+                <AlertTriangle className="h-12 w-12 text-red-600 mb-2" />
                 <div className="font-bold text-lg mb-1">Error</div>
                 <div className="text-sm text-muted-foreground">{popup.message}</div>
                 <Button size="sm" variant="outline" className="mt-4" onClick={() => setPopup(null)}>

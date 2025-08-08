@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { fetchAllPosts } from "@/utils/api";
+import { NewsFeedSkeleton } from "@/components/NewsFeedSkeleton";
 
-// Shuffle posts each reload
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -18,20 +18,28 @@ function shuffleArray<T>(array: T[]): T[] {
   return arr;
 }
 
-// Helper: Chunk array for Featured News blocks
 function getFeaturedBlocks(list: any[], blockCount: number = 2) {
   const blocks = [];
-  let idx = 4; // skip first 4 posts (used for hero/trending)
+  let idx = 4;
   for (let b = 0; b < blockCount; b++) {
-    // Each block is 1 big, 4 small (5 total)
     const big = list[idx];
-    const small = list.slice(idx + 1, idx + 5); // 4 small
+    const small = list.slice(idx + 1, idx + 5);
     if (!big) break;
     blocks.push({ big, smalls: small });
     idx += 5;
   }
   return blocks;
 }
+
+function getRandomIndex(length: number) {
+  return Math.floor(Math.random() * length);
+}
+
+const HIGHLIGHT_YELLOW = "rgb(234,255,0)";
+const SIDEBAR_CARD_HEIGHT = 88;
+const SIDEBAR_CARD_IMG = 56;
+const TITLE_FONT = "1.02rem";
+const TITLE_WEIGHT = 600;
 
 const NewsFeed = () => {
   const [posts, setPosts] = useState<any[]>([]);
@@ -44,25 +52,22 @@ const NewsFeed = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (!posts.length) return <div>No posts available.</div>;
+  if (loading) return <NewsFeedSkeleton />;
+  if (posts.length === 0) return <div>No posts available.</div>;
 
-  // Slicing for all sections
   const heroPost = posts[0];
   const trendingPosts = posts.length > 1 ? posts.slice(1, 4) : [];
-  const featuredBlocks = getFeaturedBlocks(posts, 2); // show 2 blocks (change to 1 for single)
-  // Remove all posts used by Featured section from All News
-  // Posts used: 1 (hero) + 3 (trending) + N*5 (blocks)
+  const featuredBlocks = getFeaturedBlocks(posts, 2);
   const totalFeatured = featuredBlocks.length * 5;
   const allPosts = posts.slice(4 + totalFeatured);
   const topStory = posts.length > 5 ? posts[5] : heroPost;
   const recentPosts = posts.length >= 3 ? posts.slice(-3) : posts;
+  const highlightRecentIdx = getRandomIndex(recentPosts.length);
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      {/* Create Post button fixed bottom-right */}
       <div className="fixed bottom-6 right-6 z-50">
         <Button asChild size="lg" className="rounded-full shadow-lg">
           <Link to="/create-post" className="flex items-center">
@@ -74,45 +79,57 @@ const NewsFeed = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Hero */}
+            {/* Hero Post */}
             <div className="mb-8">
-              <NewsCard post={heroPost} variant="hero" />
+              <Link to={`/posts/${heroPost.id}`} className="block">
+                <NewsCard post={heroPost} variant="hero" />
+              </Link>
             </div>
 
-            {/* Trending News */}
-            <TrendingNews posts={trendingPosts} />
+            {/* Trending */}
+            <TrendingNews
+              posts={trendingPosts.map((post) => ({
+                ...post,
+                link: `/posts/${post.id}`,
+              }))}
+            />
 
-            {/* ------ FEATURED NEWS CUSTOM BLOCK LAYOUT ------ */}
+            {/* Featured */}
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-foreground mb-6">Featured News</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-6 font-libertinus">
+                Featured News
+              </h2>
               <div className="space-y-10">
                 {featuredBlocks.map((block, idx) => (
                   <div
                     key={idx}
                     className="grid grid-cols-1 md:grid-cols-5 gap-6 items-stretch"
                   >
-                    {/* Left: One big post with small, truncated title below */}
                     <div className="col-span-1 md:col-span-2 flex flex-col h-full">
-                      <NewsCard post={block.big} variant="large" className="h-full" />
+                      <Link to={`/posts/${block.big.id}`} className="block h-full">
+                        <NewsCard post={block.big} variant="large" className="h-full" />
+                      </Link>
                       <div className="mt-1">
-                        <h3 className="text-sm font-semibold text-foreground leading-tight line-clamp-1">
+                        <Link
+                          to={`/posts/${block.big.id}`}
+                          className="text-sm font-semibold text-foreground leading-tight line-clamp-1 hover:underline font-libertinus"
+                        >
                           {block.big.title}
-                        </h3>
+                        </Link>
                       </div>
                     </div>
-                    {/* Right: 4 small posts stacked */}
                     <div className="col-span-1 md:col-span-3 flex flex-col gap-3 justify-between">
                       {block.smalls.map(
-                        (post: any, sidx: number) =>
+                        (post: any) =>
                           post && (
-                            <NewsCard
+                            <Link
                               key={post.id}
-                              post={post}
-                              variant="small"
-                              className="flex-row"
-                            />
+                              to={`/posts/${post.id}`}
+                              className="block flex-row hover:underline"
+                            >
+                              <NewsCard post={post} variant="small" className="flex-row" />
+                            </Link>
                           )
                       )}
                     </div>
@@ -121,12 +138,14 @@ const NewsFeed = () => {
               </div>
             </section>
 
-            {/* All News section unchanged */}
+            {/* All Posts */}
             <section>
-              <h2 className="text-2xl font-bold text-foreground mb-6">All News</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-6 font-libertinus">All News</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {allPosts.map((post) => (
-                  <NewsCard key={post.id} post={post} variant="large" />
+                  <Link key={post.id} to={`/posts/${post.id}`} className="block hover:underline">
+                    <NewsCard post={post} variant="large" />
+                  </Link>
                 ))}
               </div>
             </section>
@@ -139,17 +158,103 @@ const NewsFeed = () => {
 
               {/* Top Story */}
               <div className="bg-card rounded-lg p-4 shadow-sm">
-                <h3 className="font-semibold text-foreground mb-4">Top Story</h3>
-                <NewsCard post={topStory} variant="small" />
+                <h3 className="font-semibold text-foreground mb-4 font-libertinus">Top Story</h3>
+                {topStory && (
+                  <Link to={`/posts/${topStory.id}`} className="block">
+                    <div
+                      className="flex items-center gap-3 px-4 py-4 rounded-xl shadow"
+                      style={{
+                        background: HIGHLIGHT_YELLOW,
+                        borderLeft: `7px solid ${HIGHLIGHT_YELLOW}`,
+                        minHeight: SIDEBAR_CARD_HEIGHT,
+                        maxHeight: SIDEBAR_CARD_HEIGHT,
+                        alignItems: "center",
+                      }}
+                    >
+                      <img
+                        src={topStory.image}
+                        alt={topStory.title}
+                        style={{
+                          height: SIDEBAR_CARD_IMG,
+                          width: SIDEBAR_CARD_IMG,
+                          objectFit: "cover",
+                          borderRadius: 14,
+                          marginRight: 10,
+                        }}
+                        className="flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0 flex items-center">
+                        <span
+                          className="font-libertinus font-semibold text-foreground leading-tight truncate"
+                          style={{
+                            fontSize: TITLE_FONT,
+                            fontWeight: TITLE_WEIGHT as any,
+                            maxWidth: "98%",
+                          }}
+                          title={topStory.title}
+                        >
+                          {topStory.title}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                )}
               </div>
 
               {/* Recent News */}
               <div className="bg-card rounded-lg p-4 shadow-sm">
-                <h3 className="font-semibold text-foreground mb-4">Recent News</h3>
+                <h3 className="font-semibold text-foreground mb-4 font-libertinus">Recent News</h3>
                 <div className="space-y-4">
-                  {recentPosts.map((post) => (
-                    <NewsCard key={post.id} post={post} variant="small" />
-                  ))}
+                  {recentPosts.map((post, idx) => {
+                    const isHighlighted = idx === highlightRecentIdx;
+                    if (!post) return null;
+                    const cardStyles = {
+                      minHeight: SIDEBAR_CARD_HEIGHT,
+                      maxHeight: SIDEBAR_CARD_HEIGHT,
+                      alignItems: "center",
+                      ...(isHighlighted
+                        ? {
+                            background: HIGHLIGHT_YELLOW,
+                            borderLeft: `7px solid ${HIGHLIGHT_YELLOW}`,
+                          }
+                        : {}),
+                    };
+                    return (
+                      <Link
+                        key={post.id}
+                        to={`/posts/${post.id}`}
+                        className={`flex items-center gap-3 px-4 py-4 rounded-xl shadow ${
+                          isHighlighted ? "" : "border"
+                        }`}
+                        style={cardStyles}
+                      >
+                        <img
+                          src={post.image}
+                          alt={post.title}
+                          style={{
+                            height: SIDEBAR_CARD_IMG,
+                            width: SIDEBAR_CARD_IMG,
+                            objectFit: "cover",
+                            borderRadius: 14,
+                            marginRight: 10,
+                          }}
+                          className="flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0 flex items-center">
+                          <span
+                            className="font-libertinus font-semibold text-foreground leading-tight truncate"
+                            style={{
+                              fontSize: TITLE_FONT,
+                              maxWidth: "98%",
+                            }}
+                            title={post.title}
+                          >
+                            {post.title}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             </div>
