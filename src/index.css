@@ -108,6 +108,10 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --accent: 64 85% 55%;
+    --accent-foreground: 230 35% 7%;
+
   }
 }
 
